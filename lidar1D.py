@@ -28,7 +28,7 @@ def ReadFile(fileName):
     assert os.path.exists(fileName), f"File '{fileName}' not found."
     assert os.path.isfile(fileName), f"'{fileName}' is not a file."
 
-    fileHandler = open(fileName, 'r')
+    fileHandler = open(fileName, "r")
     data = csv.reader(fileHandler)
     return data
 
@@ -108,8 +108,8 @@ def GetFlightPathFromFile(flightPath):
     for points in pathPoints:
         pointsList.append(points)
 
-    sweepIDs = numpy.array(pointsList[::2], dtype='uint8')[:, 0]
-    pathCoordinates = numpy.array(pointsList[1::2], dtype='float32')
+    sweepIDs = numpy.array(pointsList[::2], dtype="uint8")[:, 0]
+    pathCoordinates = numpy.array(pointsList[1::2], dtype="float32")
 
     # Print the sweep ID and location for each point in the flight path
     for sweepID, point in zip(sweepIDs, pathCoordinates):
@@ -131,14 +131,18 @@ def main(args):
     """
 
     # Check if flightPath and lidarPoints arguments are provided and valid files
-    assert hasattr(args, 'flightPath'), "The 'flightPath' argument is missing."
+    assert hasattr(args, "flightPath"), "The 'flightPath' argument is missing."
     assert args.flightPath, "No flight path filename provided."
-    assert os.path.exists(args.flightPath), f"Flight path file '{args.flightPath}' not found."
+    assert os.path.exists(
+        args.flightPath
+    ), f"Flight path file '{args.flightPath}' not found."
     assert os.path.isfile(args.flightPath), f"'{args.flightPath}' is not a file."
 
-    assert hasattr(args, 'lidarPoints'), "The 'lidarPoints' argument is missing."
+    assert hasattr(args, "lidarPoints"), "The 'lidarPoints' argument is missing."
     assert args.lidarPoints, "No LiDAR measurement filename provided."
-    assert os.path.exists(args.lidarPoints), f"LiDAR measurement file '{args.lidarPoints}' not found."
+    assert os.path.exists(
+        args.lidarPoints
+    ), f"LiDAR measurement file '{args.lidarPoints}' not found."
     assert os.path.isfile(args.lidarPoints), f"'{args.lidarPoints}' is not a file."
 
     # Read flight path and LiDAR measurements from files
@@ -146,10 +150,16 @@ def main(args):
     angles, distances = GetLidarMeasurementsFromFile(args.lidarPoints)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog=sys.argv[0], description=DESCRIPTION, epilog='python3 lidar1D.py --flightPath <flight_path_file> --lidarPoints <lidar_measurements_file> --show')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog=sys.argv[0],
+        description=DESCRIPTION,
+        epilog="python3 lidar1D.py --flightPath <flight_path_file> --lidarPoints <lidar_measurements_file> --show",
+    )
     parser.add_argument("--flightPath", help="path to flight path .csv file", type=str)
-    parser.add_argument("--lidarPoints", help="path to lidar measurements .csv file", type=str)
-    parser.add_argument('--show', action='store_true')
+    parser.add_argument(
+        "--lidarPoints", help="path to lidar measurements .csv file", type=str
+    )
+    parser.add_argument("--show", action="store_true")
     args = parser.parse_args()
     main(args)

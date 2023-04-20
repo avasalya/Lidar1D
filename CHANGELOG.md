@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2023-04-21
+### Added
+- None
+
+### Changed
+ - "Black" formatter applied to `lidar1D.py`
 ## [1.0.0] - 2023-04-21
 
 ### Added
