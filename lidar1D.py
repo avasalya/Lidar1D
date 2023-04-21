@@ -119,6 +119,104 @@ def GetFlightPathFromFile(flightPath):
     return sweepIDs, pathCoordinates
 
 
+def GetUnitConversionScale(inputUnit, outputUnit):
+    """
+    Converts between different units of distance.
+
+    Args:
+    inputUnit (str): The unit of distance to convert from.
+    outputUnit (str): The unit of distance to convert to.
+
+    Returns:
+    float: The scale factor to convert from inputUnit to outputUnit.
+
+    Raises:
+    AssertionError: If inputUnit or outputUnit is not a valid unit of distance.
+    """
+
+    unitsDict = {"m": 1, "cm": 100, "mm": 1000}
+
+    # Ensure inputUnit is a valid unit of distance
+    assert inputUnit in unitsDict.keys(), "Invalid inputUnit: {}".format(inputUnit)
+
+    # Ensure outputUnit is a valid unit of distance
+    assert outputUnit in unitsDict.keys(), "Invalid outputUnit: {}".format(outputUnit)
+
+    # Return the scale factor to convert from inputUnit to outputUnit
+    return unitsDict[outputUnit] / unitsDict[inputUnit]
+
+
+def ExtractSweepsFromMeasurements(angles, distances):
+    """
+    Extracts lidar sweeps from measurements.
+
+    Args:
+        angles (numpy.ndarray): 1D array of angles in degrees.
+        distances (numpy.ndarray): 1D array of distances.
+
+    Returns:
+        lidarSweepsList (list): List of dictionaries containing the angles and distances of each lidar sweep.
+
+    Raises:
+        AssertionError: If the input arrays are empty or not 1D.
+        AssertionError: If the length of the input arrays do not match.
+        AssertionError: If the angles array contains values outside the range [0, 360).
+
+    """
+
+    # Check input arrays are valid
+    assert len(angles.shape) == 1, "angles array should be 1D"
+    assert len(distances.shape) == 1, "distances array should be 1D"
+    assert (
+        angles.shape == distances.shape
+    ), "angles and distances arrays should have the same length"
+    assert len(angles) > 0, "angles array should not be empty"
+    assert len(distances) > 0, "distances array should not be empty"
+    assert (angles >= 0).all() and (
+        angles <= 360
+    ).all(), "angles should be in the range [0, 360]"
+
+    # statistically extract total samples per sweep
+    allZeroCrossingPoints = numpy.where(numpy.round(angles) == 0)[0]
+    possibleSamplesLength = numpy.diff(allZeroCrossingPoints)
+    sampleBins, sampleValues = numpy.histogram(possibleSamplesLength)
+    numSamples = sampleValues[numpy.argmax(sampleBins)]
+    # we rely on the fact that our lidar sensor is not perfect,
+    # and can have few samples more or less per sweep
+    possibleNumSamples = [
+        possibleNumSamples for possibleNumSamples in [-2, -1, 0, 1, 2]
+    ] + numSamples
+
+    numSweeps = 0
+    sweepSamplesLengthList = []
+    for distance in distances:
+        if distance in possibleNumSamples:
+            print("At sweep={}, numSamples={}".format(numSweeps, int(distance)))
+            numSweeps += 1
+            sweepSamplesLengthList.append(int(distance))
+    sweepSamplesLengthList = numpy.array(sweepSamplesLengthList)
+
+    lidarSweepsList = []
+    for sweepID in range(numSweeps):
+        minIndex = (
+            sweepSamplesLengthList[:sweepID].sum() + sweepID + 1 if sweepID > 0 else 0
+        )
+        maxIndex = sweepSamplesLengthList[: (sweepID + 1)].sum() + sweepID + 1
+        print(
+            "For Sweep={} data ranges from minIndex:maxIndex {}:{}".format(
+                sweepID, minIndex, maxIndex
+            )
+        )
+
+        sweepDataDict = {}
+        sweepDataDict["angles"] = angles[minIndex:maxIndex]
+        unitConversionFactor = GetUnitConversionScale("mm", "m")
+        sweepDataDict["distances"] = distances[minIndex:maxIndex] * unitConversionFactor
+        lidarSweepsList.append(sweepDataDict)
+
+    return lidarSweepsList
+
+
 def main(args):
     """
     Reads flight path and LiDAR measurement files.
@@ -149,6 +247,9 @@ def main(args):
     sweepIDs, pathCoordinates = GetFlightPathFromFile(args.flightPath)
     angles, distances = GetLidarMeasurementsFromFile(args.lidarPoints)
 
+    # Extract measurements from each sweep
+    lidarSweepsList = ExtractSweepsFromMeasurements(angles, distances)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -160,6 +261,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--lidarPoints", help="path to lidar measurements .csv file", type=str
     )
-    parser.add_argument("--show", action="store_true")
+    parser.add_argument(
+        "--show", help="flag to enable visualization", action="store_true"
+    )
     args = parser.parse_args()
     main(args)

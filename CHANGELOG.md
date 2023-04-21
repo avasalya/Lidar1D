@@ -2,12 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.1] - 2023-04-21
+## [1.1.0] - 2023-04-21
+
 ### Added
-- None
+- `GetUnitConversionScale()` function to get conversion factor between distance units.
+- `ExtractSweepsFromMeasurements` function to extract individual lidar sweeps from measurements data.
+
+### Changed
+- README updated to add usage of `--show` flag.
+
+[1.1.0]: https://github.com/avasalya/Lidar1D/releases/tag/v1.1.0
+
+## [1.0.1] - 2023-04-21
 
 ### Changed
  - "Black" formatter applied to `lidar1D.py`
+
 ## [1.0.0] - 2023-04-21
 
 ### Added
