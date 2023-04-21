@@ -3,6 +3,7 @@ import sys
 import csv
 import numpy
 import argparse
+import matplotlib.pyplot as plt
 
 DESCRIPTION = "Drone mapping and localization using 1D Lidar"
 
@@ -250,6 +251,15 @@ def main(args):
     # Extract measurements from each sweep
     lidarSweepsList = ExtractSweepsFromMeasurements(angles, distances)
 
+    # Combine sweepID, drone position and lidar measurements
+    for sweepID in sweepIDs:
+        lidarSweepsList[sweepID].update(
+            {"sweepID": sweepID, "coordinates": pathCoordinates[sweepID]}
+        )
+
+    if args.show:
+        plt.ion()
+        plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
