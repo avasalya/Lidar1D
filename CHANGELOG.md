@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2023-04-23
+
+## Added
+- `VisualizeMeasurementsPerSweep` function to visualize lidar measurements and grip map per sweep.
+- OpenSource library added `https://atsushisakai.github.io/PythonRobotics` to compute grid map from lidar sweep data.
+- Output files from `VisualizeMeasurementsPerSweep` added to output folder.
+
+## Changed
+- Fixed usage and crashing of matplotlib at the end of program.
+- README updated with output results to visualize each sweep data.
+
+[1.2.0]: https://github.com/avasalya/Lidar1D/releases/tag/v1.2.0
+
 ## [1.1.1] - 2023-04-21
 
 ### Added

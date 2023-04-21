@@ -1,9 +1,13 @@
+#!/usr/bin/env python3
 import os
 import sys
 import csv
 import numpy
 import argparse
 import matplotlib.pyplot as plt
+
+from mapping import lidar_to_grid_map
+
 
 DESCRIPTION = "Drone mapping and localization using 1D Lidar"
 
@@ -114,7 +118,7 @@ def GetFlightPathFromFile(flightPath):
 
     # Print the sweep ID and location for each point in the flight path
     for sweepID, point in zip(sweepIDs, pathCoordinates):
-        print(f"At sweep {sweepID}: drone was at location {point}")
+        print(f"At sweep {sweepID}: drone was at coordinates {point}")
 
     # Return the arrays of sweep IDs and path coordinates
     return sweepIDs, pathCoordinates
@@ -218,6 +222,89 @@ def ExtractSweepsFromMeasurements(angles, distances):
     return lidarSweepsList
 
 
+def VisualizeMeasurementsPerSweep(
+    lidarSweepsList, sampling=2, xy_resolution=0.01, show=False
+):
+    """
+    Visualizes lidar measurements per sweep.
+
+    Args:
+        lidarSweepsList (list): List of dictionaries containing the angles and distances of each lidar sweep.
+        sampling (int): Sampling interval for displaying lidar measurements.
+        xy_resolution (float): Resolution of the grid map.
+        show (bool): Whether or not to display the generated plots.
+
+    Raises:
+        AssertionError: If lidarSweepsList is empty or not a list.
+        AssertionError: If sampling is not a positive integer.
+        AssertionError: If xy_resolution is not a positive float.
+
+    """
+    assert (
+        isinstance(lidarSweepsList, list) and len(lidarSweepsList) > 0
+    ), "lidarSweepsList should be a non-empty list"
+    assert (
+        isinstance(sampling, int) and sampling > 0
+    ), "sampling should be a positive integer"
+    assert (
+        isinstance(xy_resolution, float) and xy_resolution > 0
+    ), "xy_resolution should be a positive float"
+
+    numSweeps = len(lidarSweepsList)
+
+    try:
+        for sweepID in range(numSweeps):
+            print(
+                "Computing lidar measurements and occupancy map from sweepID={}".format(
+                    sweepID
+                )
+            )
+            # convert the Lidar measurements to x, y coordinates
+            angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
+            distances = lidarSweepsList[sweepID]["distances"]
+            ox = (distances) * numpy.sin(angles)
+            oy = (distances) * numpy.cos(angles)
+
+            gridMap = lidar_to_grid_map.generate_ray_casting_grid_map(
+                ox, oy, xy_resolution, sweepID, True
+            )[0]
+
+            if show:
+                print(
+                    "Preparing visualizing grid map and Lidar Measurement map of sweepID={}".format(
+                        sweepID
+                    )
+                )
+                plt.figure(sweepID, figsize=(20, 10))
+                plt.subplot(121)
+                plt.title("gridMap=%i" % sweepID)
+                plt.imshow(gridMap, cmap="RdYlGn_r")
+                plt.colorbar()
+                plt.draw()
+
+                plt.subplot(122)
+                plt.title("lidarMeasurementMap=%i" % sweepID)
+                plt.plot(
+                    [oy[::sampling], numpy.zeros(numpy.size(oy[::sampling]))],
+                    [ox[::sampling], numpy.zeros(numpy.size(ox[::sampling]))],
+                    "ro-",
+                )
+                plt.plot(0, 0, "ob")
+                bottom, top = plt.ylim()
+                plt.ylim((top, bottom))
+                plt.draw()
+
+                plt.savefig(os.path.join("output", "sweepID_{}.png".format(sweepID)))
+        if show:
+            plt.draw()
+            plt.pause(0.001)
+            input("Press [enter] to exit.")
+
+    except KeyboardInterrupt:
+        if show:
+            pass
+
+
 def main(args):
     """
     Reads flight path and LiDAR measurement files.
@@ -244,6 +331,10 @@ def main(args):
     ), f"LiDAR measurement file '{args.lidarPoints}' not found."
     assert os.path.isfile(args.lidarPoints), f"'{args.lidarPoints}' is not a file."
 
+    if args.show:
+        plt.ion()
+        plt.show()
+
     # Read flight path and LiDAR measurements from files
     sweepIDs, pathCoordinates = GetFlightPathFromFile(args.flightPath)
     angles, distances = GetLidarMeasurementsFromFile(args.lidarPoints)
@@ -257,9 +348,9 @@ def main(args):
             {"sweepID": sweepID, "coordinates": pathCoordinates[sweepID]}
         )
 
-    if args.show:
-        plt.ion()
-        plt.show()
+    # Visualize Lidar data per sweeps
+    VisualizeMeasurementsPerSweep(lidarSweepsList=lidarSweepsList, show=args.show)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
