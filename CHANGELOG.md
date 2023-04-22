@@ -1,0 +1,55 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [1.2.0] - 2023-04-23
+
+## Added
+- `VisualizeMeasurementsPerSweep` function to visualize lidar measurements and grip map per sweep.
+- OpenSource library added `https://atsushisakai.github.io/PythonRobotics` to compute grid map from lidar sweep data.
+- Output files from `VisualizeMeasurementsPerSweep` added to output folder.
+
+## Changed
+- Fixed usage and crashing of matplotlib at the end of program.
+- README updated with output results to visualize each sweep data.
+
+[1.2.0]: https://github.com/avasalya/Lidar1D/releases/tag/v1.2.0
+
+## [1.1.1] - 2023-04-21
+
+### Added
+- Combined sweepID, drone position and lidar measurement data.
+- Added support to visualize data using matplotlib.
+
+## [1.1.0] - 2023-04-21
+
+### Added
+- `GetUnitConversionScale()` function to get conversion factor between distance units.
+- `ExtractSweepsFromMeasurements` function to extract individual lidar sweeps from measurements data.
+
+### Changed
+- README updated to add usage of `--show` flag.
+
+[1.1.0]: https://github.com/avasalya/Lidar1D/releases/tag/v1.1.0
+
+## [1.0.1] - 2023-04-21
+
+### Changed
+ - "Black" formatter applied to `lidar1D.py`
+
+## [1.0.0] - 2023-04-21
+
+### Added
+- Initial version of the Drone mapping and localization using 1D Lidar project.
+- `ReadFile()` function to open and read a CSV file.
+- `GetLidarMeasurementsFromFile()` function to read a lidar measurements file and return arrays of angles and distances.
+- `GetFlightPathFromFile()` function to read a flight path file and return arrays of sweep IDs and path coordinates.
+- `main()` function to read flight path and LiDAR measurement files.
+
+### Changed
+- None
+
+### Removed
+- None
+
+[1.0.0]: https://github.com/avasalya/Lidar1D/releases/tag/v1.0.0
