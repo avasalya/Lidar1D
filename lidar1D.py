@@ -314,6 +314,39 @@ def VisualizeMeasurementsPerSweep(
             pass
 
 
+def VisualizeAllSweepsWithDronePath(lidarSweepsList, sampling=6, show=False):
+    if show:
+        log.debug("Visualizing all flight path and all sweeps measurements")
+        fig, ax = plt.subplots()
+        for sweepID in range(len(lidarSweepsList)):
+            position = lidarSweepsList[sweepID]["coordinates"]
+            angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
+            distances = lidarSweepsList[sweepID]["distances"]
+            # Plot the drone position
+            ax.scatter(position[0], position[1], color="black", marker="o")
+            ax.annotate(
+                f"Position {sweepID}",
+                xy=position,
+                xytext=(-20, 20),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+            )
+            # Plot the LIDAR data
+            x = position[0] + distances[::sampling] * numpy.cos(angles[::sampling])
+            y = position[1] + distances[::sampling] * numpy.sin(angles[::sampling])
+            ax.plot(x, y, color="blue")
+
+        # Add labels and legend
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_title("Drone Path and LIDAR Data")
+        ax.legend(["LIDAR data"])
+        plt.draw()
+        plt.pause(0.001)
+        input("Press [enter] to exit.")
+
+
 def main(args):
     """
     Reads flight path and LiDAR measurement files.
@@ -359,7 +392,12 @@ def main(args):
         )
 
     # Visualize Lidar data per sweeps
-    VisualizeMeasurementsPerSweep(lidarSweepsList=lidarSweepsList, show=args.show)
+    if args.sweepsInIsolation:
+        VisualizeMeasurementsPerSweep(lidarSweepsList=lidarSweepsList, show=args.show)
+
+    # Visualize all drone locations along with each sweep measurements
+    if args.allSweepsCombined:
+        VisualizeAllSweepsWithDronePath(lidarSweepsList=lidarSweepsList, show=args.show)
 
 
 if __name__ == "__main__":
@@ -374,6 +412,16 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--show", help="flag to enable visualization", action="store_true"
+    )
+    parser.add_argument(
+        "--sweepsInIsolation",
+        help="flag to visualization all sweeps in isolation, --show must be set to true with this flag",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--allSweepsCombined",
+        help="flag to visualization all sweeps combined, --show must be set to true with this flag",
+        action="store_true",
     )
     args = parser.parse_args()
 
