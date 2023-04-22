@@ -1,15 +1,47 @@
 #!/usr/bin/env python3
+__author__ = "Ashesh Vasalya"
+
 import os
 import sys
 import csv
 import numpy
+import logging
 import argparse
 import matplotlib.pyplot as plt
 
-from mapping import lidar_to_grid_map
-
+from libs.mapping import lidar_to_grid_map
 
 DESCRIPTION = "Drone mapping and localization using 1D Lidar"
+
+
+class CustomFormatter(logging.Formatter):
+    """
+    Based on original design
+    https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
+    """
+
+    grey = "\x1b[38;20m"
+    green = "\x1b[32m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = (
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+    )
+
+    FORMATS = {
+        logging.DEBUG: green + format + reset,
+        logging.INFO: grey + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset,
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
 
 
 def ReadFile(fileName):
@@ -75,8 +107,7 @@ def GetLidarMeasurementsFromFile(lidarPoints):
     angles = numpy.array(angles)
     distances = numpy.array(distances)
 
-    # Print a message indicating how many samples were collected
-    print(f"In total, the drone collected {len(angles)} samples from all sweeps.")
+    log.debug(f"In total, the drone collected {len(angles)} samples from all sweeps.")
 
     # Return the arrays of angles and distances
     return angles, distances
@@ -104,8 +135,7 @@ def GetFlightPathFromFile(flightPath):
     assert os.path.exists(flightPath), f"Flight path file '{flightPath}' not found."
     assert os.path.isfile(flightPath), f"'{flightPath}' is not a file."
 
-    # Read the flight path from the file
-    print(f"Reading flight coordinates from {flightPath}")
+    log.debug(f"Reading flight coordinates from {flightPath}")
     pathPoints = ReadFile(flightPath)
 
     # Parse the flight path into sweep IDs and path coordinates
@@ -118,7 +148,7 @@ def GetFlightPathFromFile(flightPath):
 
     # Print the sweep ID and location for each point in the flight path
     for sweepID, point in zip(sweepIDs, pathCoordinates):
-        print(f"At sweep {sweepID}: drone was at coordinates {point}")
+        log.info(f"At sweep {sweepID}: drone was at coordinates {point}")
 
     # Return the arrays of sweep IDs and path coordinates
     return sweepIDs, pathCoordinates
@@ -196,18 +226,19 @@ def ExtractSweepsFromMeasurements(angles, distances):
     sweepSamplesLengthList = []
     for distance in distances:
         if distance in possibleNumSamples:
-            print("At sweep={}, numSamples={}".format(numSweeps, int(distance)))
+            log.info("At sweep={}, numSamples={}".format(numSweeps, int(distance)))
             numSweeps += 1
             sweepSamplesLengthList.append(int(distance))
     sweepSamplesLengthList = numpy.array(sweepSamplesLengthList)
 
+    log.debug("extract each sweep measurement data and create list per sweep")
     lidarSweepsList = []
     for sweepID in range(numSweeps):
         minIndex = (
             sweepSamplesLengthList[:sweepID].sum() + sweepID + 1 if sweepID > 0 else 0
         )
         maxIndex = sweepSamplesLengthList[: (sweepID + 1)].sum() + sweepID + 1
-        print(
+        log.info(
             "For Sweep={} data ranges from minIndex:maxIndex {}:{}".format(
                 sweepID, minIndex, maxIndex
             )
@@ -254,7 +285,7 @@ def VisualizeMeasurementsPerSweep(
 
     try:
         for sweepID in range(numSweeps):
-            print(
+            log.debug(
                 "Computing lidar measurements and occupancy map from sweepID={}".format(
                     sweepID
                 )
@@ -270,7 +301,7 @@ def VisualizeMeasurementsPerSweep(
             )[0]
 
             if show:
-                print(
+                log.info(
                     "Preparing visualizing grid map and Lidar Measurement map of sweepID={}".format(
                         sweepID
                     )
@@ -298,7 +329,7 @@ def VisualizeMeasurementsPerSweep(
         if show:
             plt.draw()
             plt.pause(0.001)
-            input("Press [enter] to exit.")
+            input("Press [enter] to continue or exit.")
 
     except KeyboardInterrupt:
         if show:
@@ -343,6 +374,7 @@ def main(args):
     lidarSweepsList = ExtractSweepsFromMeasurements(angles, distances)
 
     # Combine sweepID, drone position and lidar measurements
+    log.debug("Combine flight path position per sweep with lidar measurements.")
     for sweepID in sweepIDs:
         lidarSweepsList[sweepID].update(
             {"sweepID": sweepID, "coordinates": pathCoordinates[sweepID]}
@@ -366,4 +398,17 @@ if __name__ == "__main__":
         "--show", help="flag to enable visualization", action="store_true"
     )
     args = parser.parse_args()
+
+    # create logger with 'spam_application'
+    log = logging.getLogger(sys.argv[0])
+    log.setLevel(logging.DEBUG)
+
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    ch.setFormatter(CustomFormatter())
+
+    log.addHandler(ch)
+
     main(args)
