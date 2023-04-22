@@ -10,38 +10,10 @@ import argparse
 import matplotlib.pyplot as plt
 
 from libs.mapping import lidar_to_grid_map
+from libs.logger import CustomFormatter
+
 
 DESCRIPTION = "Drone mapping and localization using 1D Lidar"
-
-
-class CustomFormatter(logging.Formatter):
-    """
-    Based on original design
-    https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
-    """
-
-    grey = "\x1b[38;20m"
-    green = "\x1b[32m"
-    yellow = "\x1b[33;20m"
-    red = "\x1b[31;20m"
-    bold_red = "\x1b[31;1m"
-    reset = "\x1b[0m"
-    format = (
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
-    )
-
-    FORMATS = {
-        logging.DEBUG: green + format + reset,
-        logging.INFO: grey + format + reset,
-        logging.WARNING: yellow + format + reset,
-        logging.ERROR: red + format + reset,
-        logging.CRITICAL: bold_red + format + reset,
-    }
-
-    def format(self, record):
-        log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt)
-        return formatter.format(record)
 
 
 def ReadFile(fileName):
@@ -254,7 +226,11 @@ def ExtractSweepsFromMeasurements(angles, distances):
 
 
 def VisualizeMeasurementsPerSweep(
-    lidarSweepsList, sampling=2, xy_resolution=0.01, show=False
+    lidarSweepsList,
+    sampling=2,
+    xy_resolution=0.01,
+    show=False,
+    dumpViz=False,
 ):
     """
     Visualizes lidar measurements per sweep.
@@ -324,8 +300,10 @@ def VisualizeMeasurementsPerSweep(
                 bottom, top = plt.ylim()
                 plt.ylim((top, bottom))
                 plt.draw()
-
-                plt.savefig(os.path.join("output", "sweepID_{}.png".format(sweepID)))
+                if dumpViz:
+                    plt.savefig(
+                        os.path.join("output", "sweepID_{}.png".format(sweepID))
+                    )
         if show:
             plt.draw()
             plt.pause(0.001)
