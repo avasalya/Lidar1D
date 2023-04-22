@@ -315,6 +315,23 @@ def VisualizeMeasurementsPerSweep(
 
 
 def VisualizeAllSweepsWithDronePath(lidarSweepsList, sampling=6, show=False):
+    """
+    Visualizes all the LIDAR sweeps in the given list along with the drone's flight path.
+
+    Parameters:
+    -----------
+    lidarSweepsList : List[Dict[str, Union[numpy.ndarray, List[float]]]]
+        A list of dictionaries containing the LIDAR sweeps' information.
+        Each dictionary should contain keys "coordinates", "angles", and "distances".
+    sampling : int, optional
+        Sampling factor for the LIDAR data. Default is 6.
+    show : bool, optional
+        If True, shows the plot. Default is False.
+
+    Returns:
+    --------
+    None
+    """
     if show:
         log.debug("Visualizing all flight path and all sweeps measurements")
         fig, ax = plt.subplots()
