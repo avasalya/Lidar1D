@@ -428,13 +428,11 @@ if __name__ == "__main__":
     # create logger with 'spam_application'
     log = logging.getLogger(sys.argv[0])
     log.setLevel(logging.DEBUG)
-
+    
     # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-
-    ch.setFormatter(CustomFormatter())
-
-    log.addHandler(ch)
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setLevel(logging.DEBUG)
+    consoleHandler.setFormatter(CustomFormatter())
+    log.addHandler(consoleHandler)
 
     main(args)
