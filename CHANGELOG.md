@@ -2,12 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0] - 2023-04-23
+## [1.3.0] - 2023-04-23
 
 ## Added
-- `VisualizeMeasurementsPerSweep` function to visualize lidar measurements and grip map per sweep.
+- Moved mappig library to a new location libs/
+- Custom logger library added
+- `VisualizeAllSweepsWithDronePath()` function added to combine and visualize flight path and all lidar measurements.
+- Updated README, added output data from `VisualizeMeasurementsPerSweep()`.
+- Added optional argument `--sweepsInIsolation` Visualize LiDAR data for each sweep separately. Default is `False`.
+- Added optional argument `--allSweepsCombined` Visualize all drone locations along with each sweep's measurements. Default is `False`.
+- Added output of Task 1, to visualize all data in isolation and combined from all scans.
+
+## Changed
+- Replaced usage of `prints` with standard `logging`.
+- Renamed `lidar1D.py` to `lidar_analysis.py`.
+- Updated README, added detailed docuementation on the usage of `lidar_analysis.py`.
+- Doctstring of several functions updated to match consistent style format.
+
+[1.3.0]: https://github.com/avasalya/Lidar1D/releases/tag/v1.3.0
+
+## [1.2.0] - 2023-04-22
+
+## Added
+- `VisualizeMeasurementsPerSweep()` function to visualize lidar measurements and grid map per sweep.
 - OpenSource library added `https://atsushisakai.github.io/PythonRobotics` to compute grid map from lidar sweep data.
-- Output files from `VisualizeMeasurementsPerSweep` added to output folder.
+- Output files from `VisualizeMeasurementsPerSweep()` added to output folder.
 
 ## Changed
 - Fixed usage and crashing of matplotlib at the end of program.
@@ -25,7 +44,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - `GetUnitConversionScale()` function to get conversion factor between distance units.
-- `ExtractSweepsFromMeasurements` function to extract individual lidar sweeps from measurements data.
+- `ExtractSweepsFromMeasurements()` function to extract individual lidar sweeps from measurements data.
 
 ### Changed
 - README updated to add usage of `--show` flag.
