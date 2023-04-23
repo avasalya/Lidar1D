@@ -117,7 +117,7 @@
 
 > ### All sweeps combined with flight path
 ![flightPathWombinedScans](output/dronePathAndScans.png)
-- TODO: better visualization to combine all sweeps, perhaps related to [Task 5](#TASK-5)
+- TODO: better visualization to combine all sweeps, perhaps related to [Task 5](#task-5-mapping)
 
 # TASK 2: Simulation
 ### Generate new LIDARDPoints data based on a new room layout and new plausible flight plan. This data is not provided so you will need to create the layout and flight plan yourself. This can either be done manually (ensure you include your data with your submission) or programmatically.
