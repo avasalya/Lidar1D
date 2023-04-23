@@ -1,19 +1,49 @@
 # Drone flight mapping and localization using 2D Lidar
+
+# Structure
+```.
+├── CHANGELOG.md
+├── LICENSE
+├── README.md
+├── data
+│   ├── FlightPath.csv
+│   └── LIDARPoints.csv
+├── libs
+│   ├── __init__.py
+│   ├── lidarutils.py
+│   ├── loghandler.py
+│   └── mapping
+│       ├── __init__.py
+│       └── lidar_to_grid_map.py
+├── main.py
+├── output
+```
 # TASK 1: Display
 ### Create a program to provide an appropriate visualization of the drone’s path and the LIDAR data. Ideally, the display should be able to show 1 sweep (1 scan ID) of data in isolation as well as all the sweeps combined together. This can be on separate displays or on the same display (with individual sweeps shown by highlighting for example)
 
 ## Result
-### `lidar_analysis.py`
+### `main.py`
 > This script is designed to read flight path and LiDAR measurement files and extract and visualize data from them. It takes command-line arguments using `argparse` module, and the functionality of the script depends on the arguments passed.
 
-### Required Arguments
+#### Required Arguments
 - `--flightPath`: A path to a file containing flight path coordinates.
 - `--lidarPoints`: A path to a file containing LiDAR measurements.
 
-### Optional Arguments
+#### Optional Arguments
 - `--show`: Display the visualizations in a window. Default is `False`.
 - `--sweepsInIsolation`: Visualize LiDAR data for each sweep separately. Default is `False`.
 - `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements. Default is `False`.
+
+### Usage
+`python main.py --flightPath <pathToFlightPath.csv> --lidarPoints <pathToLidarData.csv> [--show] [--sweepsInIsolation] [--allSweepsCombined]`
+
+- `--flightPath`: Path to the flight path coordinates file.
+- `--lidarPoints`: Path to the LiDAR measurements file.
+- `--show`: Display the visualizations in a window.
+- `--sweepsInIsolation`: Visualize LiDAR data for each sweep separately.
+- `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements.
+
+- example: `python3 main.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined`
 
 ### Functionality
 - Check if required input arguments are present and valid files.
@@ -23,16 +53,10 @@
 - Visualize LiDAR data per sweeps.
 - Visualize all drone locations along with each sweep's measurements.
 
-### Usage
-`python lidar_analysis.py --flightPath <pathToFlightPath.csv> --lidarPoints <pathToLidarData.csv> [--show] [--sweepsInIsolation] [--allSweepsCombined]`
-
-- `--flightPath`: Path to the flight path coordinates file.
-- `--lidarPoints`: Path to the LiDAR measurements file.
-- `--show`: Display the visualizations in a window.
-- `--sweepsInIsolation`: Visualize LiDAR data for each sweep separately.
-- `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements.
-
-- example: `python3 lidar_analysis.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined`
+### Libraries
+- `libs/mapping`: opensource library (https://atsushisakai.github.io/PythonRobotics) to generate gridMap and measurementMap for each sweep.
+- `libs/lidarutils.py`: my functions to read and extract data from input flightpath and lidarPoints.
+- `libs/loghandler.py`: my logger handler, based on the original design by https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
 
 ## Output
  - Based on the "FlightPath.csv" and "LIDARPoints.csv", the Lidar took total of 34 sweeps measurements *not 18*. Also drone seem to have total of 34 waypoints.

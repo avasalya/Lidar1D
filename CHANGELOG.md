@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2023-04-23
+## Changed
+- Refactor whole project structure in order to test individual functionalities.
+- Moved all helper functions to `libs/lidarutils.py`
+- Split `lidar_analysis.py` into `main.py` and `lidarutils.py`
+- `lidarutils.py` contains all the required utilites and data extraction logics.
+- `main.py` is the starting point to read and visualize the data from `FlightPath.csv` and `LIDARPoints.csv`
+- Redesign logging based on the original design by guys from the internet. Made it into a standalone Class to have shared usage across the whole pipeline.
+- README updated with instructions on project structure and library usage. some libraries are opensource and credit goes to respective original authors.
+
+[2.0.0]: https://github.com/avasalya/Lidar1D/releases/tag/v2.0.0
+
 ## [1.3.0] - 2023-04-23
 
 ## Added

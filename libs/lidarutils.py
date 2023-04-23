@@ -2,18 +2,16 @@
 __author__ = "Ashesh Vasalya"
 
 import os
-import sys
 import csv
 import numpy
-import logging
-import argparse
+
 import matplotlib.pyplot as plt
 
-from libs.mapping import lidar_to_grid_map
-from libs.logger import CustomFormatter
+from .mapping import lidar_to_grid_map
+from . import loghandler
 
 
-DESCRIPTION = "Drone mapping and localization using 1D Lidar"
+logHandle = loghandler.LogHandler()
 
 
 def ReadFile(fileName):
@@ -79,7 +77,7 @@ def GetLidarMeasurementsFromFile(lidarPoints):
     angles = numpy.array(angles)
     distances = numpy.array(distances)
 
-    log.debug(f"In total, the drone collected {len(angles)} samples from all sweeps.")
+    logHandle.log.debug(f"In total, the drone collected {len(angles)} samples from all sweeps.")
 
     # Return the arrays of angles and distances
     return angles, distances
@@ -107,7 +105,7 @@ def GetFlightPathFromFile(flightPath):
     assert os.path.exists(flightPath), f"Flight path file '{flightPath}' not found."
     assert os.path.isfile(flightPath), f"'{flightPath}' is not a file."
 
-    log.debug(f"Reading flight coordinates from {flightPath}")
+    logHandle.log.debug(f"Reading flight coordinates from {flightPath}")
     pathPoints = ReadFile(flightPath)
 
     # Parse the flight path into sweep IDs and path coordinates
@@ -120,7 +118,7 @@ def GetFlightPathFromFile(flightPath):
 
     # Print the sweep ID and location for each point in the flight path
     for sweepID, point in zip(sweepIDs, pathCoordinates):
-        log.info(f"At sweep {sweepID}: drone was at coordinates {point}")
+        logHandle.log.info(f"At sweep {sweepID}: drone was at coordinates {point}")
 
     # Return the arrays of sweep IDs and path coordinates
     return sweepIDs, pathCoordinates
@@ -181,6 +179,7 @@ def ExtractSweepsFromMeasurements(angles, distances):
     ), "angles and distances arrays should have the same length"
     assert len(angles) > 0, "angles array should not be empty"
     assert len(distances) > 0, "distances array should not be empty"
+    assert (distances >= 0).all(), "distances should be positive"
     assert (angles >= 0).all() and (
         angles <= 360
     ).all(), "angles should be in the range [0, 360]"
@@ -201,19 +200,19 @@ def ExtractSweepsFromMeasurements(angles, distances):
     sweepSamplesLengthList = []
     for distance in distances:
         if distance in possibleNumSamples:
-            log.info("At sweep={}, numSamples={}".format(numSweeps, int(distance)))
+            logHandle.log.info("At sweep={}, numSamples={}".format(numSweeps, int(distance)))
             numSweeps += 1
             sweepSamplesLengthList.append(int(distance))
     sweepSamplesLengthList = numpy.array(sweepSamplesLengthList)
 
-    log.debug("extract each sweep measurement data and create list per sweep")
+    logHandle.log.debug("extract each sweep measurement data and create list per sweep")
     lidarSweepsList = []
     for sweepID in range(numSweeps):
         minIndex = (
             sweepSamplesLengthList[:sweepID].sum() + sweepID + 1 if sweepID > 0 else 0
         )
         maxIndex = sweepSamplesLengthList[: (sweepID + 1)].sum() + sweepID + 1
-        log.info(
+        logHandle.log.info(
             "For Sweep={} data ranges from minIndex:maxIndex {}:{}".format(
                 sweepID, minIndex, maxIndex
             )
@@ -265,7 +264,7 @@ def VisualizeMeasurementsPerSweep(
     numSweeps = len(lidarSweepsList)
 
     for sweepID in range(numSweeps):
-        log.debug(
+        logHandle.log.debug(
             "Computing lidar measurements and occupancy map from sweepID={}".format(
                 sweepID
             )
@@ -281,7 +280,7 @@ def VisualizeMeasurementsPerSweep(
         )[0]
 
         if show:
-            log.info(
+            logHandle.log.info(
                 "Preparing visualizing grid map and Lidar Measurement map of sweepID={}".format(
                     sweepID
                 )
@@ -329,7 +328,7 @@ def VisualizeAllSweepsWithDronePath(
         dumpViz (bool): If True, dump visualization frames to disk.
     """
     if show:
-        log.debug("Visualizing all flight path and all sweeps measurements")
+        logHandle.log.debug("Visualizing all flight path and all sweeps measurements")
         fig, ax = plt.subplots(figsize=(15, 8))
         randomState = numpy.random.RandomState(3)
         for sweepID in range(len(lidarSweepsList)):
@@ -368,95 +367,3 @@ def VisualizeAllSweepsWithDronePath(
             plt.savefig(os.path.join("output", "dronePathAndScans.png"))
 
         input("Press [enter] to exit.")
-
-
-def main(args):
-    """
-    Reads flight path and LiDAR measurement files.
-
-    Args:
-        args (argparse.Namespace): A namespace object containing command-line arguments.
-
-    Raises:
-        AssertionError: If any required input arguments are missing or invalid.
-    """
-
-    # Check if flightPath and lidarPoints arguments are provided and valid files
-    assert hasattr(args, "flightPath"), "The 'flightPath' argument is missing."
-    assert args.flightPath, "No flight path filename provided."
-    assert os.path.exists(
-        args.flightPath
-    ), f"Flight path file '{args.flightPath}' not found."
-    assert os.path.isfile(args.flightPath), f"'{args.flightPath}' is not a file."
-
-    assert hasattr(args, "lidarPoints"), "The 'lidarPoints' argument is missing."
-    assert args.lidarPoints, "No LiDAR measurement filename provided."
-    assert os.path.exists(
-        args.lidarPoints
-    ), f"LiDAR measurement file '{args.lidarPoints}' not found."
-    assert os.path.isfile(args.lidarPoints), f"'{args.lidarPoints}' is not a file."
-
-    if args.show:
-        plt.ion()
-        plt.show()
-
-    # Read flight path and LiDAR measurements from files
-    sweepIDs, pathCoordinates = GetFlightPathFromFile(args.flightPath)
-    angles, distances = GetLidarMeasurementsFromFile(args.lidarPoints)
-
-    # Extract measurements from each sweep
-    lidarSweepsList = ExtractSweepsFromMeasurements(angles, distances)
-
-    # Combine sweepID, drone position and lidar measurements
-    log.debug("Combine flight path position per sweep with lidar measurements.")
-    for sweepID in sweepIDs:
-        lidarSweepsList[sweepID].update(
-            {"sweepID": sweepID, "coordinates": pathCoordinates[sweepID]}
-        )
-
-    # Visualize Lidar data per sweeps
-    if args.sweepsInIsolation:
-        VisualizeMeasurementsPerSweep(lidarSweepsList=lidarSweepsList, show=args.show)
-
-    # Visualize all drone locations along with each sweep measurements
-    if args.allSweepsCombined:
-        VisualizeAllSweepsWithDronePath(lidarSweepsList=lidarSweepsList, show=args.show)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        prog=sys.argv[0],
-        description=DESCRIPTION,
-        epilog="python3 lidar1D.py --flightPath <flight_path_file> --lidarPoints <lidar_measurements_file> --show",
-    )
-    parser.add_argument("--flightPath", help="path to flight path .csv file", type=str)
-    parser.add_argument(
-        "--lidarPoints", help="path to lidar measurements .csv file", type=str
-    )
-    parser.add_argument(
-        "--show", help="flag to enable visualization", action="store_true"
-    )
-    parser.add_argument(
-        "--sweepsInIsolation",
-        help="flag to visualization all sweeps in isolation, --show must be set to true with this flag",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--allSweepsCombined",
-        help="flag to visualization all sweeps combined, --show must be set to true with this flag",
-        action="store_true",
-    )
-    args = parser.parse_args()
-
-    # create logger with 'spam_application'
-    log = logging.getLogger(sys.argv[0])
-    log.setLevel(logging.DEBUG)
-
-    # create console handler with a higher log level
-    consoleHandler = logging.StreamHandler()
-    consoleHandler.setLevel(logging.DEBUG)
-    consoleHandler.setFormatter(CustomFormatter())
-    log.addHandler(consoleHandler)
-
-    main(args)
-    log.debug("******    end of program, exiting.  *******")
