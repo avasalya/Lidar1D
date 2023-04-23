@@ -21,18 +21,28 @@
 ```
 
 # Requirements
-
-- os
-- sys
-- csv
-- NumPy
-- math
-- collections
-- argparse
-- matplotlib
+- python=3.9
+- ipython
+- flake8
+- numpy
+- black
 - pytest
-- Python 3.9.x
+- matplotlib=3.7.1
 
+### To create the
+```
+conda env create -f environment.yml
+```
+
+### To activate this environment, use
+```
+conda activate lidar_analysis
+```
+
+### To deactivate an active environment, use
+```
+conda deactivate
+```
 # TASK 1: Display
 ### Create a program to provide an appropriate visualization of the drone’s path and the LIDAR data. Ideally, the display should be able to show 1 sweep (1 scan ID) of data in isolation as well as all the sweeps combined together. This can be on separate displays or on the same display (with individual sweeps shown by highlighting for example)
 
@@ -58,8 +68,11 @@
 - `--sweepsInIsolation`: Visualize LiDAR data for each sweep separately.
 - `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements.
 
-- example: `python3 main.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined`
-
+#### example:
+```
+$ conda activate lidar_analysis
+$ python main.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined
+```
 ### Functionality
 - Check if required input arguments are present and valid files.
 - Read flight path and LiDAR measurements from files.
