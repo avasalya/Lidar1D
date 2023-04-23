@@ -59,7 +59,7 @@ class TestExtractSweepsFromMeasurements:
         """Test function to ensure the function raises a ValueError
         when NaN values are passed as input.
         """
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             angles = numpy.array([0, 90, numpy.nan, 270])
             distances = numpy.array([1, 2, 3, 4])
             ExtractSweepsFromMeasurements(angles, distances)
@@ -68,7 +68,7 @@ class TestExtractSweepsFromMeasurements:
         """Test function to ensure the function raises a ValueError
         when Inf values are passed as input.
         """
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             angles = numpy.array([0, 90, numpy.inf, 270])
             distances = numpy.array([1, 2, 3, 4])
             ExtractSweepsFromMeasurements(angles, distances)

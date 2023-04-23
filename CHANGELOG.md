@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 # Added
 - Added .github/python-package.yml to support building package across several versions.
 
+## Changed
+- Fixed Pytest wrong failure on expected assertions
+
 
 ## [2.2.0] - 2023-04-23
 

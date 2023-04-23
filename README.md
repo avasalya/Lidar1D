@@ -71,7 +71,7 @@ conda deactivate
 - `--sweepsInIsolation`: Visualize LiDAR data for each sweep separately.
 - `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements.
 
-#### example:
+#### example
 ```
 $ conda activate lidar_analysis
 $ python task1.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined
@@ -93,16 +93,21 @@ $ python task1.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARP
 - To ensure that the `ExtractSweepsFromMeasurements()` function works as expected. To run the tests, simply navigate to the parent directory and run `pytest`:
 
 ```
+$ conda activate lidar_analysis
 $ cd Lidar1D-X.x.x
 $ pytest
 ```
 - Should be able to see following results.
-- The `2 failed` cases are expected, since here I am trying to make sure assertions are triggered.
 ```
-====== short test summary info ======
-FAILED test_lidar_analysis.py::TestExtractSweepsFromMeasurements::test_nan_values - AssertionError: angles should be in the range [0, 360]
-FAILED test_lidar_analysis.py::TestExtractSweepsFromMeasurements::test_inf_values - AssertionError: angles should be in the range [0, 360]
-====== 2 failed, 5 passed in 0.42s ======
+$ pytest
+====== test session starts ======
+platform darwin -- Python 3.9.16, pytest-7.3.1, pluggy-1.0.0
+rootdir: /Users/ash/Documents/codes/tests/scoville/lidar_analysis
+collected 7 items
+
+test_lidar_analysis.py .......                                                                                             [100%]
+
+====== 7 passed in 0.36s ======
 ```
 
 ## Output
