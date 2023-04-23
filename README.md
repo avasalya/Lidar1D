@@ -1,5 +1,4 @@
-# 1D Lidar Data Analysis
-> Drone mapping and localization using 1D Lidar
+# Drone flight mapping and localization using 2D Lidar
 
 ## `lidar_analysis.py`
 > This script is designed to read flight path and LiDAR measurement files and extract and visualize data from them. It takes command-line arguments using `argparse` module, and the functionality of the script depends on the arguments passed.
