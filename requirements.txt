@@ -1,4 +1,3 @@
-python
 ipython
 flake8
 numpy
