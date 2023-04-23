@@ -17,7 +17,22 @@
 │       └── lidar_to_grid_map.py
 ├── main.py
 ├── output
+└── test_lidar_analysis.py
 ```
+
+# Requirements
+
+- os
+- sys
+- csv
+- NumPy
+- math
+- collections
+- argparse
+- matplotlib
+- pytest
+- Python 3.9.x
+
 # TASK 1: Display
 ### Create a program to provide an appropriate visualization of the drone’s path and the LIDAR data. Ideally, the display should be able to show 1 sweep (1 scan ID) of data in isolation as well as all the sweeps combined together. This can be on separate displays or on the same display (with individual sweeps shown by highlighting for example)
 
@@ -57,6 +72,22 @@
 - `libs/mapping`: opensource library (https://atsushisakai.github.io/PythonRobotics) to generate gridMap and measurementMap for each sweep.
 - `libs/lidarutils.py`: my functions to read and extract data from input flightpath and lidarPoints.
 - `libs/loghandler.py`: my logger handler, based on the original design by https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
+
+### Unit Tests
+- To ensure that the `ExtractSweepsFromMeasurements()` function works as expected. To run the tests, simply navigate to the parent directory and run `pytest`:
+
+```
+$ cd lidar_analysis
+$ pytest
+```
+- Should be able to see following results.
+- The `2 failed` cases are expected, since here I am trying to make sure assertions are triggered.
+```
+====== short test summary info ======
+FAILED test_lidar_analysis.py::TestExtractSweepsFromMeasurements::test_nan_values - AssertionError: angles should be in the range [0, 360]
+FAILED test_lidar_analysis.py::TestExtractSweepsFromMeasurements::test_inf_values - AssertionError: angles should be in the range [0, 360]
+====== 2 failed, 5 passed in 0.42s ======
+```
 
 ## Output
  - Based on the "FlightPath.csv" and "LIDARPoints.csv", the Lidar took total of 34 sweeps measurements *not 18*. Also drone seem to have total of 34 waypoints.

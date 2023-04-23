@@ -2,7 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2023-04-23
+
+## Added
+- Implemented unit tests for the `ExtractSweepsFromMeasurements()` function in the `lidarutils` module.
+- `test_empty_arrays`: ensures the function raises an AssertionError when empty arrays are passed as input.
+- `test_different_array_lengths`: ensures the function raises an AssertionError when arrays of different lengths are passed as input.
+- `test_angles_outside_range`: ensures the function raises an AssertionError when the angles array contains values outside the range [0, 360].
+- `test_non_numeric_values`: ensures the function raises a TypeError when non-numeric values are passed as input.
+- `test_negative_values`: ensures the function raises an AssertionError when the distances array contains negative values.
+- `test_nan_values`: ensures the function raises a ValueError when NaN values are passed as input.
+- `test_inf_values`: ensures the function raises a ValueError when Inf values are passed as input.
+
+[2.1.0]: https://github.com/avasalya/Lidar1D/releases/tag/v2.1.0
+
 ## [2.0.0] - 2023-04-23
+
 ## Changed
 - Refactor whole project structure in order to test individual functionalities.
 - Moved all helper functions to `libs/lidarutils.py`
