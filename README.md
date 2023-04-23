@@ -34,6 +34,7 @@
 # Results
 ## TASK 1:
 ### Create a program to provide an appropriate visualization of the drone’s path and the LIDAR data. Ideally, the display should be able to show 1 sweep (1 scan ID) of data in isolation as well as all the sweeps combined together. This can be on separate displays or on the same display (with individual sweeps shown by highlighting for example)
+> ## Individual sweeps
 ![sweepID_0](output/sweepID_0.png)
 ![sweepID_1](output/sweepID_1.png)
 ![sweepID_2](output/sweepID_2.png)
@@ -68,3 +69,6 @@
 ![sweepID_31](output/sweepID_31.png)
 ![sweepID_32](output/sweepID_32.png)
 ![sweepID_33](output/sweepID_33.png)
+
+> ## All sweeps combined with flight path
+![flightPathWombinedScans](output/dronePathAndScans.png)

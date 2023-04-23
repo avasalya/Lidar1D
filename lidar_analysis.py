@@ -131,14 +131,14 @@ def GetUnitConversionScale(inputUnit, outputUnit):
     Converts between different units of distance.
 
     Args:
-    inputUnit (str): The unit of distance to convert from.
-    outputUnit (str): The unit of distance to convert to.
+        inputUnit (str): The unit of distance to convert from.
+        outputUnit (str): The unit of distance to convert to.
 
     Returns:
-    float: The scale factor to convert from inputUnit to outputUnit.
+        float: The scale factor to convert from inputUnit to outputUnit.
 
     Raises:
-    AssertionError: If inputUnit or outputUnit is not a valid unit of distance.
+        AssertionError: If inputUnit or outputUnit is not a valid unit of distance.
     """
 
     unitsDict = {"m": 1, "cm": 100, "mm": 1000}
@@ -162,7 +162,9 @@ def ExtractSweepsFromMeasurements(angles, distances):
         distances (numpy.ndarray): 1D array of distances.
 
     Returns:
-        lidarSweepsList (list): List of dictionaries containing the angles and distances of each lidar sweep.
+        lidarSweepsList (list): List[Dict[str, numpy.ndarray]]
+        A list of dictionaries containing the LIDAR sweeps' information.
+        Each dictionary should contain keys "sweepID", "coordinates", "angles", and "distances".
 
     Raises:
         AssertionError: If the input arrays are empty or not 1D.
@@ -240,6 +242,7 @@ def VisualizeMeasurementsPerSweep(
         sampling (int): Sampling interval for displaying lidar measurements.
         xy_resolution (float): Resolution of the grid map.
         show (bool): Whether or not to display the generated plots.
+        dumpViz (bool): If True, save the visualization to a file.
 
     Raises:
         AssertionError: If lidarSweepsList is empty or not a list.
@@ -314,31 +317,33 @@ def VisualizeMeasurementsPerSweep(
             pass
 
 
-def VisualizeAllSweepsWithDronePath(lidarSweepsList, sampling=6, show=False):
+def VisualizeAllSweepsWithDronePath(
+    lidarSweepsList,
+    sampling=2,
+    show=False,
+    dumpViz=False,
+):
     """
     Visualizes all the LIDAR sweeps in the given list along with the drone's flight path.
 
-    Parameters:
-    -----------
-    lidarSweepsList : List[Dict[str, Union[numpy.ndarray, List[float]]]]
-        A list of dictionaries containing the LIDAR sweeps' information.
-        Each dictionary should contain keys "coordinates", "angles", and "distances".
-    sampling : int, optional
-        Sampling factor for the LIDAR data. Default is 6.
-    show : bool, optional
-        If True, shows the plot. Default is False.
-
-    Returns:
-    --------
-    None
+    Args:
+        lidarSweepsList (list): List of LiDAR sweep dictionaries.
+        sampling (int): Downsample factor for lidar sweep visualization.
+        show (bool): If True, show the visualization window.
+        dumpViz (bool): If True, dump visualization frames to disk.
     """
     if show:
         log.debug("Visualizing all flight path and all sweeps measurements")
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(15, 8))
         for sweepID in range(len(lidarSweepsList)):
             position = lidarSweepsList[sweepID]["coordinates"]
             angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
             distances = lidarSweepsList[sweepID]["distances"]
+            # Plot the LIDAR data
+            x = position[0] + distances[::sampling] * numpy.cos(angles[::sampling])
+            y = position[1] + distances[::sampling] * numpy.sin(angles[::sampling])
+            ax.plot(x, y, "ro", linewidth=2, markersize=1)
+
             # Plot the drone position
             ax.scatter(position[0], position[1], color="black", marker="o")
             ax.annotate(
@@ -349,18 +354,19 @@ def VisualizeAllSweepsWithDronePath(lidarSweepsList, sampling=6, show=False):
                 ha="center",
                 va="bottom",
             )
-            # Plot the LIDAR data
-            x = position[0] + distances[::sampling] * numpy.cos(angles[::sampling])
-            y = position[1] + distances[::sampling] * numpy.sin(angles[::sampling])
-            ax.plot(x, y, color="blue")
 
         # Add labels and legend
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
+        ax.set_xlim((0, 25))
+        ax.set_ylim((-15, 30))
         ax.set_title("Drone Path and LIDAR Data")
         ax.legend(["LIDAR data"])
         plt.draw()
         plt.pause(0.001)
+        if dumpViz:
+            plt.savefig(os.path.join("output", "dronePathAndScans.png"))
+
         input("Press [enter] to exit.")
 
 
