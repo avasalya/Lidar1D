@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 from .mapping import lidar_to_grid_map
 from . import loghandler
 
-
 logHandle = loghandler.LogHandler()
 
 
@@ -77,7 +76,9 @@ def GetLidarMeasurementsFromFile(lidarPoints):
     angles = numpy.array(angles)
     distances = numpy.array(distances)
 
-    logHandle.log.debug(f"In total, the drone collected {len(angles)} samples from all sweeps.")
+    logHandle.log.debug(
+        f"In total, the drone collected {len(angles)} samples from all sweeps."
+    )
 
     # Return the arrays of angles and distances
     return angles, distances
@@ -200,7 +201,9 @@ def ExtractSweepsFromMeasurements(angles, distances):
     sweepSamplesLengthList = []
     for distance in distances:
         if distance in possibleNumSamples:
-            logHandle.log.info("At sweep={}, numSamples={}".format(numSweeps, int(distance)))
+            logHandle.log.info(
+                "At sweep={}, numSamples={}".format(numSweeps, int(distance))
+            )
             numSweeps += 1
             sweepSamplesLengthList.append(int(distance))
     sweepSamplesLengthList = numpy.array(sweepSamplesLengthList)
@@ -367,3 +370,61 @@ def VisualizeAllSweepsWithDronePath(
             plt.savefig(os.path.join("output", "dronePathAndScans.png"))
 
         input("Press [enter] to exit.")
+
+
+def VisualizeRandomFlightPathAndSweep(positions, angles, distances, sampling=6):
+    """
+    Plot the drone flight path and simulated LIDAR measurements on a 2D graph.
+
+    Args:
+        positions (list): List of 2D arrays representing drone positions.
+        angles (list): List of 2D arrays representing LIDAR angles in degrees.
+        distances (list): List of 2D arrays representing LIDAR distances.
+        sampling (int): Sampling rate for plotting LIDAR data. Defaults to 6.
+
+    Returns:
+        None
+    """
+
+    # Check inputs are valid
+    assert isinstance(positions, list), "positions should be a list"
+    assert isinstance(angles, list), "angles should be a list"
+    assert isinstance(distances, list), "distances should be a list"
+    assert len(positions) == len(angles) == len(distances), "inputs should have the same length"
+
+    fig, ax = plt.subplots()
+
+    logHandle.log.info("preparing to plot flight path and sweep measurements.")
+    randomState = numpy.random.RandomState(3)
+    for index, position in enumerate(positions):
+        color = tuple(
+            (randomState.random(), randomState.random(), randomState.random())
+        )
+        # Plot the drone position
+        ax.scatter(position[0], position[1], color="black", marker="o")
+        ax.annotate(
+            f"P={index}",
+            xy=position,
+            xytext=(-20, 20),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+        )
+
+        # Plot the LIDAR data
+        xPos = position[0] + distances[index][::sampling] * numpy.cos(
+            angles[index][::sampling]
+        )
+        yPos = position[1] + distances[index][::sampling] * numpy.sin(
+            angles[index][::sampling]
+        )
+        ax.plot(xPos, yPos, color=color, marker="o")
+
+    # Add labels and legend
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_title("Drone Path and LIDAR Data")
+    ax.legend(["LIDAR data"])
+    plt.draw()
+    plt.pause(0.001)
+    input("Press [enter] to exit.")

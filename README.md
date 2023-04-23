@@ -200,7 +200,7 @@ $ conda activate lidar_analysis
 $ python task2.py
 ```
 ## Output
-- *Note*: Random number generator is being used to generate values for angles, distances, drone positions, therefore it will give different result on every run.
+- *Note*: Random number generator is being used to generate values for angles, distances, drone positions, therefore it will give different result on every run. However I have tried to keep new data based on a new room layout and new plausible flight plan based on some random number of room arrangements.
 - Below is an example from one of those runs.
 
 ![sweepID_10](output/outputTask2.png)
