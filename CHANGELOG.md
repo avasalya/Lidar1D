@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2023-04-23
+
+## Added
+- Flight path waypoints connection added to visualization for Task1 and Task 2 outputs.
+
+[2.3.0]: https://github.com/avasalya/Lidar1D/releases/tag/v2.3.0
+
 ## [2.2.1] - 2023-04-23
 
 ## Added
