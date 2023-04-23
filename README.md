@@ -1,27 +1,35 @@
+# 1D Lidar Data Analysis
+> Drone mapping and localization using 1D Lidar
 
-# Lidar1D
-Drone mapping and localization using 1D Lidar
+## `lidar_analysis.py`
+> This script is designed to read flight path and LiDAR measurement files and extract and visualize data from them. It takes command-line arguments using `argparse` module, and the functionality of the script depends on the arguments passed.
 
-## To Run
+### Required Arguments
+- `--flightPath`: A path to a file containing flight path coordinates.
+- `--lidarPoints`: A path to a file containing LiDAR measurements.
 
-```
-python3 lidar1D.py --help
-usage: lidar1D.py [-h] [--flightPath FLIGHTPATH] [--lidarPoints LIDARPOINTS]
-                  [--show]
+### Optional Arguments
+- `--show`: Display the visualizations in a window. Default is `False`.
+- `--sweepsInIsolation`: Visualize LiDAR data for each sweep separately. Default is `False`.
+- `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements. Default is `False`.
 
-Drone mapping and localization using 1D Lidar
+### Functionality
+- Check if required input arguments are present and valid files.
+- Read flight path and LiDAR measurements from files.
+- Extract measurements from each sweep.
+- Combine sweep ID, drone position, and LiDAR measurements.
+- Visualize LiDAR data per sweeps.
+- Visualize all drone locations along with each sweep's measurements.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --flightPath FLIGHTPATH
-                        path to flight path .csv file
-  --lidarPoints LIDARPOINTS
-                        path to lidar measurements .csv file
-  --show                flag to enable visualization
+### Usage
+`python lidar_analysis.py --flightPath <pathToFlightPath.csv> --lidarPoints <pathToLidarData.csv> [--show] [--sweepsInIsolation] [--allSweepsCombined]`
 
-python3 lidar1D.py --flightPath <flight_path_file> --lidarPoints
-<lidar_measurements_file> --show
-```
+- `--flightPath`: Path to the flight path coordinates file.
+- `--lidarPoints`: Path to the LiDAR measurements file.
+- `--show`: Display the visualizations in a window.
+- `--sweepsInIsolation`: Visualize LiDAR data for each sweep separately.
+- `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements.
+
 
 # Results
 ## TASK 1:
