@@ -2,13 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.3.0] - 2023-04-23
-# Added
+## [2.2.1] - 2023-04-23
+
+## Added
 - Added .github/python-package.yml to support building package across several versions.
 
 ## Changed
 - Fixed Pytest wrong failure on expected assertions
 
+[2.2.1]: https://github.com/avasalya/Lidar1D/releases/tag/v2.2.1
 
 ## [2.2.0] - 2023-04-23
 
