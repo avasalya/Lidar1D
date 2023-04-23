@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+__author__ = "Ashesh Vasalya"
+
 import numpy
 import pytest
 
