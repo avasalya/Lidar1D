@@ -357,6 +357,16 @@ def VisualizeAllSweepsWithDronePath(
                 va="bottom",
             )
 
+            # Connect wayPoints
+            if sweepID > 0:
+                startPos = lidarSweepsList[sweepID - 1]["coordinates"]
+                endPos = position
+                ax.plot(
+                    [startPos[0], endPos[0]],
+                    [startPos[1], endPos[1]],
+                    color=color,
+                )
+
         # Add labels and legend
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
@@ -402,16 +412,6 @@ def VisualizeRandomFlightPathAndSweep(positions, angles, distances, sampling=6):
         color = tuple(
             (randomState.random(), randomState.random(), randomState.random())
         )
-        # Plot the drone position
-        ax.scatter(position[0], position[1], color="black", marker="o")
-        ax.annotate(
-            f"P={index}",
-            xy=position,
-            xytext=(-20, 20),
-            textcoords="offset points",
-            ha="center",
-            va="bottom",
-        )
 
         # Plot the LIDAR data
         xPos = position[0] + distances[index][::sampling] * numpy.cos(
@@ -421,6 +421,27 @@ def VisualizeRandomFlightPathAndSweep(positions, angles, distances, sampling=6):
             angles[index][::sampling]
         )
         ax.scatter(xPos, yPos, color=color, marker="o", linewidths=1)
+
+        # Plot the drone position
+        ax.scatter(position[0], position[1], color="black", marker="o", linewidths=5)
+        ax.annotate(
+            f"P={index}",
+            xy=position,
+            xytext=(-20, 20),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+        )
+
+        # Connect wayPoints
+        if index > 0:
+            startPos = positions[index - 1]
+            endPos = positions[index]
+            ax.plot(
+                [startPos[0], endPos[0]],
+                [startPos[1], endPos[1]],
+                color=color,
+            )
 
     # Add labels and legend
     ax.set_xlabel("X")
