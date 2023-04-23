@@ -390,9 +390,11 @@ def VisualizeRandomFlightPathAndSweep(positions, angles, distances, sampling=6):
     assert isinstance(positions, list), "positions should be a list"
     assert isinstance(angles, list), "angles should be a list"
     assert isinstance(distances, list), "distances should be a list"
-    assert len(positions) == len(angles) == len(distances), "inputs should have the same length"
+    assert (
+        len(positions) == len(angles) == len(distances)
+    ), "inputs should have the same length"
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(15, 8))
 
     logHandle.log.info("preparing to plot flight path and sweep measurements.")
     randomState = numpy.random.RandomState(3)
@@ -418,7 +420,7 @@ def VisualizeRandomFlightPathAndSweep(positions, angles, distances, sampling=6):
         yPos = position[1] + distances[index][::sampling] * numpy.sin(
             angles[index][::sampling]
         )
-        ax.plot(xPos, yPos, color=color, marker="o")
+        ax.scatter(xPos, yPos, color=color, marker="o", linewidths=1)
 
     # Add labels and legend
     ax.set_xlabel("X")
