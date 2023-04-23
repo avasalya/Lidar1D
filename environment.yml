@@ -1,0 +1,11 @@
+name: lidar_analysis
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - ipython
+  - flake8
+  - numpy
+  - black
+  - pytest
+  - matplotlib=3.7.1

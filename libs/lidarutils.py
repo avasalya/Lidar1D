@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
+__author__ = "Ashesh Vasalya"
+
 import os
-import sys
 import csv
 import numpy
-import argparse
+
 import matplotlib.pyplot as plt
 
-from mapping import lidar_to_grid_map
+from .mapping import lidar_to_grid_map
+from . import loghandler
 
-
-DESCRIPTION = "Drone mapping and localization using 1D Lidar"
+logHandle = loghandler.LogHandler()
 
 
 def ReadFile(fileName):
@@ -75,8 +76,9 @@ def GetLidarMeasurementsFromFile(lidarPoints):
     angles = numpy.array(angles)
     distances = numpy.array(distances)
 
-    # Print a message indicating how many samples were collected
-    print(f"In total, the drone collected {len(angles)} samples from all sweeps.")
+    logHandle.log.debug(
+        f"In total, the drone collected {len(angles)} samples from all sweeps."
+    )
 
     # Return the arrays of angles and distances
     return angles, distances
@@ -104,8 +106,7 @@ def GetFlightPathFromFile(flightPath):
     assert os.path.exists(flightPath), f"Flight path file '{flightPath}' not found."
     assert os.path.isfile(flightPath), f"'{flightPath}' is not a file."
 
-    # Read the flight path from the file
-    print(f"Reading flight coordinates from {flightPath}")
+    logHandle.log.debug(f"Reading flight coordinates from {flightPath}")
     pathPoints = ReadFile(flightPath)
 
     # Parse the flight path into sweep IDs and path coordinates
@@ -118,7 +119,7 @@ def GetFlightPathFromFile(flightPath):
 
     # Print the sweep ID and location for each point in the flight path
     for sweepID, point in zip(sweepIDs, pathCoordinates):
-        print(f"At sweep {sweepID}: drone was at coordinates {point}")
+        logHandle.log.info(f"At sweep {sweepID}: drone was at coordinates {point}")
 
     # Return the arrays of sweep IDs and path coordinates
     return sweepIDs, pathCoordinates
@@ -129,14 +130,14 @@ def GetUnitConversionScale(inputUnit, outputUnit):
     Converts between different units of distance.
 
     Args:
-    inputUnit (str): The unit of distance to convert from.
-    outputUnit (str): The unit of distance to convert to.
+        inputUnit (str): The unit of distance to convert from.
+        outputUnit (str): The unit of distance to convert to.
 
     Returns:
-    float: The scale factor to convert from inputUnit to outputUnit.
+        float: The scale factor to convert from inputUnit to outputUnit.
 
     Raises:
-    AssertionError: If inputUnit or outputUnit is not a valid unit of distance.
+        AssertionError: If inputUnit or outputUnit is not a valid unit of distance.
     """
 
     unitsDict = {"m": 1, "cm": 100, "mm": 1000}
@@ -160,7 +161,9 @@ def ExtractSweepsFromMeasurements(angles, distances):
         distances (numpy.ndarray): 1D array of distances.
 
     Returns:
-        lidarSweepsList (list): List of dictionaries containing the angles and distances of each lidar sweep.
+        lidarSweepsList (list): List[Dict[str, numpy.ndarray]]
+        A list of dictionaries containing the LIDAR sweeps' information.
+        Each dictionary should contain keys "sweepID", "coordinates", "angles", and "distances".
 
     Raises:
         AssertionError: If the input arrays are empty or not 1D.
@@ -177,6 +180,7 @@ def ExtractSweepsFromMeasurements(angles, distances):
     ), "angles and distances arrays should have the same length"
     assert len(angles) > 0, "angles array should not be empty"
     assert len(distances) > 0, "distances array should not be empty"
+    assert (distances >= 0).all(), "distances should be positive"
     assert (angles >= 0).all() and (
         angles <= 360
     ).all(), "angles should be in the range [0, 360]"
@@ -186,6 +190,7 @@ def ExtractSweepsFromMeasurements(angles, distances):
     possibleSamplesLength = numpy.diff(allZeroCrossingPoints)
     sampleBins, sampleValues = numpy.histogram(possibleSamplesLength)
     numSamples = sampleValues[numpy.argmax(sampleBins)]
+
     # we rely on the fact that our lidar sensor is not perfect,
     # and can have few samples more or less per sweep
     possibleNumSamples = [
@@ -196,18 +201,21 @@ def ExtractSweepsFromMeasurements(angles, distances):
     sweepSamplesLengthList = []
     for distance in distances:
         if distance in possibleNumSamples:
-            print("At sweep={}, numSamples={}".format(numSweeps, int(distance)))
+            logHandle.log.info(
+                "At sweep={}, numSamples={}".format(numSweeps, int(distance))
+            )
             numSweeps += 1
             sweepSamplesLengthList.append(int(distance))
     sweepSamplesLengthList = numpy.array(sweepSamplesLengthList)
 
+    logHandle.log.debug("extract each sweep measurement data and create list per sweep")
     lidarSweepsList = []
     for sweepID in range(numSweeps):
         minIndex = (
             sweepSamplesLengthList[:sweepID].sum() + sweepID + 1 if sweepID > 0 else 0
         )
         maxIndex = sweepSamplesLengthList[: (sweepID + 1)].sum() + sweepID + 1
-        print(
+        logHandle.log.info(
             "For Sweep={} data ranges from minIndex:maxIndex {}:{}".format(
                 sweepID, minIndex, maxIndex
             )
@@ -223,16 +231,22 @@ def ExtractSweepsFromMeasurements(angles, distances):
 
 
 def VisualizeMeasurementsPerSweep(
-    lidarSweepsList, sampling=2, xy_resolution=0.01, show=False
+    lidarSweepsList,
+    sampling=2,
+    xy_resolution=0.01,
+    show=False,
+    dumpViz=False,
 ):
     """
     Visualizes lidar measurements per sweep.
 
     Args:
-        lidarSweepsList (list): List of dictionaries containing the angles and distances of each lidar sweep.
+        lidarSweepsList (list): List of dictionaries.
+        Containing the angles and distances of each lidar sweep.
         sampling (int): Sampling interval for displaying lidar measurements.
         xy_resolution (float): Resolution of the grid map.
         show (bool): Whether or not to display the generated plots.
+        dumpViz (bool): If True, save the visualization to a file.
 
     Raises:
         AssertionError: If lidarSweepsList is empty or not a list.
@@ -252,118 +266,165 @@ def VisualizeMeasurementsPerSweep(
 
     numSweeps = len(lidarSweepsList)
 
-    try:
-        for sweepID in range(numSweeps):
-            print(
-                "Computing lidar measurements and occupancy map from sweepID={}".format(
+    for sweepID in range(numSweeps):
+        logHandle.log.debug(
+            "Computing lidar measurements and occupancy map from sweepID={}".format(
+                sweepID
+            )
+        )
+        # convert the Lidar measurements to x, y coordinates
+        angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
+        distances = lidarSweepsList[sweepID]["distances"]
+        ox = (distances) * numpy.sin(angles)
+        oy = (distances) * numpy.cos(angles)
+
+        gridMap = lidar_to_grid_map.generate_ray_casting_grid_map(
+            ox, oy, xy_resolution, sweepID, True
+        )[0]
+
+        if show:
+            logHandle.log.info(
+                "Preparing visualizing grid map and Lidar Measurement map of sweepID={}".format(
                     sweepID
                 )
             )
-            # convert the Lidar measurements to x, y coordinates
-            angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
-            distances = lidarSweepsList[sweepID]["distances"]
-            ox = (distances) * numpy.sin(angles)
-            oy = (distances) * numpy.cos(angles)
-
-            gridMap = lidar_to_grid_map.generate_ray_casting_grid_map(
-                ox, oy, xy_resolution, sweepID, True
-            )[0]
-
-            if show:
-                print(
-                    "Preparing visualizing grid map and Lidar Measurement map of sweepID={}".format(
-                        sweepID
-                    )
-                )
-                plt.figure(sweepID, figsize=(20, 10))
-                plt.subplot(121)
-                plt.title("gridMap=%i" % sweepID)
-                plt.imshow(gridMap, cmap="RdYlGn_r")
-                plt.colorbar()
-                plt.draw()
-
-                plt.subplot(122)
-                plt.title("lidarMeasurementMap=%i" % sweepID)
-                plt.plot(
-                    [oy[::sampling], numpy.zeros(numpy.size(oy[::sampling]))],
-                    [ox[::sampling], numpy.zeros(numpy.size(ox[::sampling]))],
-                    "ro-",
-                )
-                plt.plot(0, 0, "ob")
-                bottom, top = plt.ylim()
-                plt.ylim((top, bottom))
-                plt.draw()
-
-                plt.savefig(os.path.join("output", "sweepID_{}.png".format(sweepID)))
-        if show:
+            fig = plt.figure(sweepID, figsize=(10, 5))
+            plt.subplot(121)
+            plt.title("gridMap=%i" % sweepID)
+            plt.imshow(gridMap, cmap="RdYlGn_r")
+            plt.colorbar()
             plt.draw()
+            fig.canvas.draw_idle()
+            plt.subplot(122)
+            plt.title("lidarMeasurementMap=%i" % sweepID)
+            plt.plot(
+                [oy[::sampling], numpy.zeros(numpy.size(oy[::sampling]))],
+                [ox[::sampling], numpy.zeros(numpy.size(ox[::sampling]))],
+                "ro-",
+            )
+            plt.plot(0, 0, "ob")
+            bottom, top = plt.ylim()
+            plt.ylim((top, bottom))
+            plt.draw()
+            fig.canvas.draw_idle()
+
             plt.pause(0.001)
-            input("Press [enter] to exit.")
+            if dumpViz:
+                plt.savefig(os.path.join("output", "sweepID_{}.png".format(sweepID)))
+    if show:
+        input("Press [enter] to continue or exit.")
 
-    except KeyboardInterrupt:
-        if show:
-            pass
 
-
-def main(args):
+def VisualizeAllSweepsWithDronePath(
+    lidarSweepsList,
+    sampling=2,
+    show=False,
+    dumpViz=False,
+):
     """
-    Reads flight path and LiDAR measurement files.
+    Visualizes all the LIDAR sweeps in the given list along with the drone's flight path.
 
     Args:
-        args (argparse.Namespace): A namespace object containing command-line arguments.
+        lidarSweepsList (list): List of LiDAR sweep dictionaries.
+        sampling (int): Downsample factor for lidar sweep visualization.
+        show (bool): If True, show the visualization window.
+        dumpViz (bool): If True, dump visualization frames to disk.
+    """
+    if show:
+        logHandle.log.debug("Visualizing all flight path and all sweeps measurements")
+        fig, ax = plt.subplots(figsize=(15, 8))
+        randomState = numpy.random.RandomState(3)
+        for sweepID in range(len(lidarSweepsList)):
+            position = lidarSweepsList[sweepID]["coordinates"]
+            angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
+            distances = lidarSweepsList[sweepID]["distances"]
+            # Plot the LIDAR data
+            x = position[0] + distances[::sampling] * numpy.cos(angles[::sampling])
+            y = position[1] + distances[::sampling] * numpy.sin(angles[::sampling])
+            ax.plot(x, y, "ro", linewidth=2, markersize=1)
 
-    Raises:
-        AssertionError: If any required input arguments are missing or invalid.
+            # Plot the drone position
+            color = tuple(
+                (randomState.random(), randomState.random(), randomState.random())
+            )
+            ax.plot(position[0], position[1], color=color, marker="o")
+            ax.annotate(
+                f"P:{sweepID}",
+                xy=position,
+                xytext=(-20, 20),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+            )
+
+        # Add labels and legend
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_xlim((0, 25))
+        ax.set_ylim((-15, 30))
+        ax.set_title("Drone Path and LIDAR Data")
+        ax.legend(["LIDAR data"])
+        fig.canvas.draw_idle()
+        plt.pause(0.001)
+        if dumpViz:
+            plt.savefig(os.path.join("output", "dronePathAndScans.png"))
+
+        input("Press [enter] to exit.")
+
+
+def VisualizeRandomFlightPathAndSweep(positions, angles, distances, sampling=6):
+    """
+    Plot the drone flight path and simulated LIDAR measurements on a 2D graph.
+
+    Args:
+        positions (list): List of 2D arrays representing drone positions.
+        angles (list): List of 2D arrays representing LIDAR angles in degrees.
+        distances (list): List of 2D arrays representing LIDAR distances.
+        sampling (int): Sampling rate for plotting LIDAR data. Defaults to 6.
+
+    Returns:
+        None
     """
 
-    # Check if flightPath and lidarPoints arguments are provided and valid files
-    assert hasattr(args, "flightPath"), "The 'flightPath' argument is missing."
-    assert args.flightPath, "No flight path filename provided."
-    assert os.path.exists(
-        args.flightPath
-    ), f"Flight path file '{args.flightPath}' not found."
-    assert os.path.isfile(args.flightPath), f"'{args.flightPath}' is not a file."
+    # Check inputs are valid
+    assert isinstance(positions, list), "positions should be a list"
+    assert isinstance(angles, list), "angles should be a list"
+    assert isinstance(distances, list), "distances should be a list"
+    assert len(positions) == len(angles) == len(distances), "inputs should have the same length"
 
-    assert hasattr(args, "lidarPoints"), "The 'lidarPoints' argument is missing."
-    assert args.lidarPoints, "No LiDAR measurement filename provided."
-    assert os.path.exists(
-        args.lidarPoints
-    ), f"LiDAR measurement file '{args.lidarPoints}' not found."
-    assert os.path.isfile(args.lidarPoints), f"'{args.lidarPoints}' is not a file."
+    fig, ax = plt.subplots()
 
-    if args.show:
-        plt.ion()
-        plt.show()
-
-    # Read flight path and LiDAR measurements from files
-    sweepIDs, pathCoordinates = GetFlightPathFromFile(args.flightPath)
-    angles, distances = GetLidarMeasurementsFromFile(args.lidarPoints)
-
-    # Extract measurements from each sweep
-    lidarSweepsList = ExtractSweepsFromMeasurements(angles, distances)
-
-    # Combine sweepID, drone position and lidar measurements
-    for sweepID in sweepIDs:
-        lidarSweepsList[sweepID].update(
-            {"sweepID": sweepID, "coordinates": pathCoordinates[sweepID]}
+    logHandle.log.info("preparing to plot flight path and sweep measurements.")
+    randomState = numpy.random.RandomState(3)
+    for index, position in enumerate(positions):
+        color = tuple(
+            (randomState.random(), randomState.random(), randomState.random())
+        )
+        # Plot the drone position
+        ax.scatter(position[0], position[1], color="black", marker="o")
+        ax.annotate(
+            f"P={index}",
+            xy=position,
+            xytext=(-20, 20),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
         )
 
-    # Visualize Lidar data per sweeps
-    VisualizeMeasurementsPerSweep(lidarSweepsList=lidarSweepsList, show=args.show)
+        # Plot the LIDAR data
+        xPos = position[0] + distances[index][::sampling] * numpy.cos(
+            angles[index][::sampling]
+        )
+        yPos = position[1] + distances[index][::sampling] * numpy.sin(
+            angles[index][::sampling]
+        )
+        ax.plot(xPos, yPos, color=color, marker="o")
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        prog=sys.argv[0],
-        description=DESCRIPTION,
-        epilog="python3 lidar1D.py --flightPath <flight_path_file> --lidarPoints <lidar_measurements_file> --show",
-    )
-    parser.add_argument("--flightPath", help="path to flight path .csv file", type=str)
-    parser.add_argument(
-        "--lidarPoints", help="path to lidar measurements .csv file", type=str
-    )
-    parser.add_argument(
-        "--show", help="flag to enable visualization", action="store_true"
-    )
-    args = parser.parse_args()
-    main(args)
+    # Add labels and legend
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_title("Drone Path and LIDAR Data")
+    ax.legend(["LIDAR data"])
+    plt.draw()
+    plt.pause(0.001)
+    input("Press [enter] to exit.")
