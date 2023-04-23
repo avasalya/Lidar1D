@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2023-04-23
+
+## Added
+- Added `task2.py` to address assignment related to Task2.
+- The `task2.py` simulates LIDAR measurements and drone positions using random values for sweep measurements and drone positions.
+
+## Changed
+- Renamed `main.py` to `task1.py` to be consistent with the assignments.
+
+
 ## [2.1.0] - 2023-04-23
 
 ## Added

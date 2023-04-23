@@ -8,6 +8,7 @@
 ├── data
 │   ├── FlightPath.csv
 │   └── LIDARPoints.csv
+├── environment.yml
 ├── libs
 │   ├── __init__.py
 │   ├── lidarutils.py
@@ -15,8 +16,9 @@
 │   └── mapping
 │       ├── __init__.py
 │       └── lidar_to_grid_map.py
-├── main.py
 ├── output
+├── task1.py
+├── task2.py
 └── test_lidar_analysis.py
 ```
 
@@ -47,7 +49,7 @@ conda deactivate
 ### Create a program to provide an appropriate visualization of the drone’s path and the LIDAR data. Ideally, the display should be able to show 1 sweep (1 scan ID) of data in isolation as well as all the sweeps combined together. This can be on separate displays or on the same display (with individual sweeps shown by highlighting for example)
 
 ## Result
-### `main.py`
+### `task1.py`
 > This script is designed to read flight path and LiDAR measurement files and extract and visualize data from them. It takes command-line arguments using `argparse` module, and the functionality of the script depends on the arguments passed.
 
 #### Required Arguments
@@ -60,7 +62,7 @@ conda deactivate
 - `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements. Default is `False`.
 
 ### Usage
-`python main.py --flightPath <pathToFlightPath.csv> --lidarPoints <pathToLidarData.csv> [--show] [--sweepsInIsolation] [--allSweepsCombined]`
+`python task1.py --flightPath <pathToFlightPath.csv> --lidarPoints <pathToLidarData.csv> [--show] [--sweepsInIsolation] [--allSweepsCombined]`
 
 - `--flightPath`: Path to the flight path coordinates file.
 - `--lidarPoints`: Path to the LiDAR measurements file.
@@ -71,7 +73,7 @@ conda deactivate
 #### example:
 ```
 $ conda activate lidar_analysis
-$ python main.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined
+$ python task1.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined
 ```
 ### Functionality
 - Check if required input arguments are present and valid files.
@@ -189,7 +191,19 @@ FAILED test_lidar_analysis.py::TestExtractSweepsFromMeasurements::test_inf_value
 
 # TASK 2: Simulation
 ### Generate new LIDARDPoints data based on a new room layout and new plausible flight plan. This data is not provided so you will need to create the layout and flight plan yourself. This can either be done manually (ensure you include your data with your submission) or programmatically.
-- TODO
+## Result
+### `task2.py`
+> This script simulates LIDAR measurements and drone positions using NumPy and Matplotlib libraries in Python. The simulated LIDAR measurements are created by generating random values for angles and distances, while the drone positions are generated using NumPy's random.rand function.
+## Usage
+```
+$ conda activate lidar_analysis
+$ python task2.py
+```
+## Output
+- *Note*: Random number generator is being used to generate values for angles, distances, drone positions, therefore it will give different result on every run.
+- Below is an example from one of those runs.
+
+![sweepID_10](output/outputTask2.png)
 
 # TASK 3: Flight optimization
 ### Based on the data provided, find a better flight path that will result in the shortest possible travel time but still goes through the existing rooms. (Assume the first sampled location is the start point and the last sampled location is the end point)
