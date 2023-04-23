@@ -35,6 +35,12 @@
 - example: `python3 lidar_analysis.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined`
 
 ## Output
+ - Based on the "FlightPath.csv" and "LIDARPoints.csv", the Lidar took total of 34 sweeps measurements *not 18*. Also drone seem to have total of 34 waypoints.
+ - Based on the Lidar sweeps visualizations, it seems there are total of 4 rooms. and Flight path was from room A->B->C-D.
+- D :arrow_left: C
+- :arrow_down: :arrow_up:
+- A :arrow_right:  B
+
 > ### Individual sweeps
 ![sweepID_0](output/sweepID_0.png)
 <details>
@@ -111,6 +117,7 @@
 
 > ### All sweeps combined with flight path
 ![flightPathWombinedScans](output/dronePathAndScans.png)
+- TODO: better visualization to combine all sweeps, perhaps related to [Task 5](#TASK-5)
 
 # TASK 2: Simulation
 ### Generate new LIDARDPoints data based on a new room layout and new plausible flight plan. This data is not provided so you will need to create the layout and flight plan yourself. This can either be done manually (ensure you include your data with your submission) or programmatically.
