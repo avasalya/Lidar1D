@@ -190,6 +190,7 @@ def ExtractSweepsFromMeasurements(angles, distances):
     possibleSamplesLength = numpy.diff(allZeroCrossingPoints)
     sampleBins, sampleValues = numpy.histogram(possibleSamplesLength)
     numSamples = sampleValues[numpy.argmax(sampleBins)]
+
     # we rely on the fact that our lidar sensor is not perfect,
     # and can have few samples more or less per sweep
     possibleNumSamples = [
@@ -238,7 +239,8 @@ def VisualizeMeasurementsPerSweep(
     Visualizes lidar measurements per sweep.
 
     Args:
-        lidarSweepsList (list): List of dictionaries containing the angles and distances of each lidar sweep.
+        lidarSweepsList (list): List of dictionaries.
+        Containing the angles and distances of each lidar sweep.
         sampling (int): Sampling interval for displaying lidar measurements.
         xy_resolution (float): Resolution of the grid map.
         show (bool): Whether or not to display the generated plots.
@@ -262,59 +264,53 @@ def VisualizeMeasurementsPerSweep(
 
     numSweeps = len(lidarSweepsList)
 
-    try:
-        for sweepID in range(numSweeps):
-            log.debug(
-                "Computing lidar measurements and occupancy map from sweepID={}".format(
+    for sweepID in range(numSweeps):
+        log.debug(
+            "Computing lidar measurements and occupancy map from sweepID={}".format(
+                sweepID
+            )
+        )
+        # convert the Lidar measurements to x, y coordinates
+        angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
+        distances = lidarSweepsList[sweepID]["distances"]
+        ox = (distances) * numpy.sin(angles)
+        oy = (distances) * numpy.cos(angles)
+
+        gridMap = lidar_to_grid_map.generate_ray_casting_grid_map(
+            ox, oy, xy_resolution, sweepID, True
+        )[0]
+
+        if show:
+            log.info(
+                "Preparing visualizing grid map and Lidar Measurement map of sweepID={}".format(
                     sweepID
                 )
             )
-            # convert the Lidar measurements to x, y coordinates
-            angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
-            distances = lidarSweepsList[sweepID]["distances"]
-            ox = (distances) * numpy.sin(angles)
-            oy = (distances) * numpy.cos(angles)
-
-            gridMap = lidar_to_grid_map.generate_ray_casting_grid_map(
-                ox, oy, xy_resolution, sweepID, True
-            )[0]
-
-            if show:
-                log.info(
-                    "Preparing visualizing grid map and Lidar Measurement map of sweepID={}".format(
-                        sweepID
-                    )
-                )
-                plt.figure(sweepID, figsize=(20, 10))
-                plt.subplot(121)
-                plt.title("gridMap=%i" % sweepID)
-                plt.imshow(gridMap, cmap="RdYlGn_r")
-                plt.colorbar()
-                plt.draw()
-
-                plt.subplot(122)
-                plt.title("lidarMeasurementMap=%i" % sweepID)
-                plt.plot(
-                    [oy[::sampling], numpy.zeros(numpy.size(oy[::sampling]))],
-                    [ox[::sampling], numpy.zeros(numpy.size(ox[::sampling]))],
-                    "ro-",
-                )
-                plt.plot(0, 0, "ob")
-                bottom, top = plt.ylim()
-                plt.ylim((top, bottom))
-                plt.draw()
-                if dumpViz:
-                    plt.savefig(
-                        os.path.join("output", "sweepID_{}.png".format(sweepID))
-                    )
-        if show:
+            fig = plt.figure(sweepID, figsize=(10, 5))
+            plt.subplot(121)
+            plt.title("gridMap=%i" % sweepID)
+            plt.imshow(gridMap, cmap="RdYlGn_r")
+            plt.colorbar()
             plt.draw()
-            plt.pause(0.001)
-            input("Press [enter] to continue or exit.")
+            fig.canvas.draw_idle()
+            plt.subplot(122)
+            plt.title("lidarMeasurementMap=%i" % sweepID)
+            plt.plot(
+                [oy[::sampling], numpy.zeros(numpy.size(oy[::sampling]))],
+                [ox[::sampling], numpy.zeros(numpy.size(ox[::sampling]))],
+                "ro-",
+            )
+            plt.plot(0, 0, "ob")
+            bottom, top = plt.ylim()
+            plt.ylim((top, bottom))
+            plt.draw()
+            fig.canvas.draw_idle()
 
-    except KeyboardInterrupt:
-        if show:
-            pass
+            plt.pause(0.001)
+            if dumpViz:
+                plt.savefig(os.path.join("output", "sweepID_{}.png".format(sweepID)))
+    if show:
+        input("Press [enter] to continue or exit.")
 
 
 def VisualizeAllSweepsWithDronePath(
@@ -335,6 +331,7 @@ def VisualizeAllSweepsWithDronePath(
     if show:
         log.debug("Visualizing all flight path and all sweeps measurements")
         fig, ax = plt.subplots(figsize=(15, 8))
+        randomState = numpy.random.RandomState(3)
         for sweepID in range(len(lidarSweepsList)):
             position = lidarSweepsList[sweepID]["coordinates"]
             angles = lidarSweepsList[sweepID]["angles"] * (numpy.pi / 180)
@@ -345,9 +342,12 @@ def VisualizeAllSweepsWithDronePath(
             ax.plot(x, y, "ro", linewidth=2, markersize=1)
 
             # Plot the drone position
-            ax.scatter(position[0], position[1], color="black", marker="o")
+            color = tuple(
+                (randomState.random(), randomState.random(), randomState.random())
+            )
+            ax.plot(position[0], position[1], color=color, marker="o")
             ax.annotate(
-                f"Position {sweepID}",
+                f"P:{sweepID}",
                 xy=position,
                 xytext=(-20, 20),
                 textcoords="offset points",
@@ -362,7 +362,7 @@ def VisualizeAllSweepsWithDronePath(
         ax.set_ylim((-15, 30))
         ax.set_title("Drone Path and LIDAR Data")
         ax.legend(["LIDAR data"])
-        plt.draw()
+        fig.canvas.draw_idle()
         plt.pause(0.001)
         if dumpViz:
             plt.savefig(os.path.join("output", "dronePathAndScans.png"))
@@ -459,3 +459,4 @@ if __name__ == "__main__":
     log.addHandler(consoleHandler)
 
     main(args)
+    log.debug("******    end of program, exiting.  *******")

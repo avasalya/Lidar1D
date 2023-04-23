@@ -30,6 +30,7 @@
 - `--sweepsInIsolation`: Visualize LiDAR data for each sweep separately.
 - `--allSweepsCombined`: Visualize all drone locations along with each sweep's measurements.
 
+- example: `python3 lidar_analysis.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined`
 
 # Results
 ## TASK 1:

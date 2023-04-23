@@ -18,6 +18,11 @@ All notable changes to this project will be documented in this file.
 - Renamed `lidar1D.py` to `lidar_analysis.py`.
 - Updated README, added detailed docuementation on the usage of `lidar_analysis.py`.
 - Doctstring of several functions updated to match consistent style format.
+- Use random colors to visualize flight path.
+- Draw each sweep figures in background on idle.
+
+## Removed
+- Removed `try and except` on `KeyboardInterrupt` from `VisualizeMeasurementsPerSweep()`.
 
 [1.3.0]: https://github.com/avasalya/Lidar1D/releases/tag/v1.3.0
 
