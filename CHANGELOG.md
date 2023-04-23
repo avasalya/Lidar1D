@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ## Changed
 - Renamed `main.py` to `task1.py` to be consistent with the assignments.
 
+[2.2.0]: https://github.com/avasalya/Lidar1D/releases/tag/v2.2.0
 
 ## [2.1.0] - 2023-04-23
 
