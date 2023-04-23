@@ -77,7 +77,7 @@
 - To ensure that the `ExtractSweepsFromMeasurements()` function works as expected. To run the tests, simply navigate to the parent directory and run `pytest`:
 
 ```
-$ cd lidar_analysis
+$ cd Lidar1D-X.x.x
 $ pytest
 ```
 - Should be able to see following results.
