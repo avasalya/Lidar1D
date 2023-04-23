@@ -32,7 +32,7 @@
 - pytest
 - matplotlib=3.7.1
 
-### To create the
+### To create the conda environment
 ```
 conda env create -f environment.yml
 ```
@@ -201,12 +201,15 @@ test_lidar_analysis.py .......                                                  
 ### `task2.py`
 > This script simulates LIDAR measurements and drone positions using NumPy and Matplotlib libraries in Python. The simulated LIDAR measurements are created by generating random values for angles and distances, while the drone positions are generated using NumPy's random.rand function.
 ## Usage
+- `--show`: Display the visualizations in a window.
 ```
 $ conda activate lidar_analysis
-$ python task2.py
+$ python task2.py --show
 ```
+
 ## Output
 - *Note*: Random number generator is being used to generate values for angles, distances, drone positions, therefore it will give different result on every run. However I have tried to keep new data based on a new room layout and new plausible flight plan based on some random number of room arrangements.
+- Converts the LIDARPoints data into a dictionary and saves it into a CSV file named `LIDARPoints.csv`.
 - Below is an example from one of those runs.
 
 ![sweepID_10](output/outputTask2.png)

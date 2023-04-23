@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.0] - 2023-04-24
+
+## Added
+- Converts the LIDARPoints data into a dictionary and saves it into a CSV file named LIDARPoints.csv.
+
+[2.4.0]: https://github.com/avasalya/Lidar1D/releases/tag/v2.4.0
+
 ## [2.3.0] - 2023-04-23
 
 ## Added
