@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2023-04-23
+# Added
+- Added .github/python-package.yml to support building package across several versions.
+
+
 ## [2.2.0] - 2023-04-23
 
 ## Added

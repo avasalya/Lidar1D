@@ -1,0 +1,7 @@
+python
+ipython
+flake8
+numpy
+black
+pytest
+matplotlib

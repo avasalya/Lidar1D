@@ -17,6 +17,7 @@
 │       ├── __init__.py
 │       └── lidar_to_grid_map.py
 ├── output
+├── requirements.txt
 ├── task1.py
 ├── task2.py
 └── test_lidar_analysis.py
