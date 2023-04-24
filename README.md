@@ -32,6 +32,13 @@
 - pytest
 - matplotlib=3.7.1
 
+# Getting Started
+```
+# Download `Source code` from latest release such as https://github.com/avasalya/Lidar1D/releases/tag/v2.4.0
+$ unzip Lidar1D-2.4.0.zip
+$ cd Lidar1D-2.4.0  # if using latest release package, otherwise git clone
+```
+
 ### To create the conda environment
 ```
 conda env create -f environment.yml
@@ -73,6 +80,7 @@ conda deactivate
 
 #### example
 ```
+$ cd Lidar1D-2.4.0  # if using latest release package, otherwise git clone
 $ conda activate lidar_analysis
 $ python task1.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARPoints.csv --show --sweepsInIsolation --allSweepsCombined
 ```
@@ -93,8 +101,8 @@ $ python task1.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARP
 - To ensure that the `ExtractSweepsFromMeasurements()` function works as expected. To run the tests, simply navigate to the parent directory and run `pytest`:
 
 ```
+$ cd Lidar1D-2.4.0
 $ conda activate lidar_analysis
-$ cd Lidar1D-X.x.x
 $ pytest
 ```
 - Should be able to see following results.
@@ -203,6 +211,7 @@ test_lidar_analysis.py .......                                                  
 ## Usage
 - `--show`: Display the visualizations in a window.
 ```
+$ cd Lidar1D-2.4.0
 $ conda activate lidar_analysis
 $ python task2.py --show
 ```
