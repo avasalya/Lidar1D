@@ -91,7 +91,7 @@ $ python task1.py --flightPath ./data/FlightPath.csv --lidarPoints ./data/LIDARP
 - Combine sweep ID, drone position, and LiDAR measurements.
 - Visualize LiDAR data per sweeps.
 - Visualize all drone locations along with each sweep's measurements.
-
+`
 ### Libraries
 - `libs/mapping`: opensource library (https://atsushisakai.github.io/PythonRobotics) to generate gridMap and measurementMap for each sweep.
 - `libs/lidarutils.py`: my functions to read and extract data from input flightpath and lidarPoints.
@@ -110,7 +110,7 @@ $ pytest
 $ pytest
 ====== test session starts ======
 platform darwin -- Python 3.9.16, pytest-7.3.1, pluggy-1.0.0
-rootdir: /Users/ash/Documents/codes/tests/scoville/lidar_analysis
+rootdir: lidar_analysis/
 collected 7 items
 
 test_lidar_analysis.py .......                                                                                             [100%]
